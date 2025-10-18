@@ -17,6 +17,11 @@ from sklearn.model_selection import StratifiedKFold
 
 from .utils import audio, fs, io, report
 
+from reportlab.lib import pagesizes
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Image as RLImage
+from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
+
 
 plt.switch_backend("Agg")
 sns.set_theme(style="whitegrid")
@@ -112,6 +117,64 @@ def _save_mel_grid(samples: list[tuple[str, np.ndarray, int]], path: Path, title
     plt.savefig(path, dpi=160)
     plt.close()
     return path
+
+
+def _build_pdf_report(
+    pdf_path: Path,
+    summary_text: str,
+    tables: list[Path],
+    figures: list[Path],
+) -> Path:
+    pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=pagesizes.A4)
+    story = []
+    styles = getSampleStyleSheet()
+    width, height = pagesizes.A4
+
+    story.append(Paragraph("EDA Summary", styles["Title"]))
+    story.append(Spacer(1, 12))
+
+    for line in summary_text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            story.append(Spacer(1, 6))
+            continue
+        if stripped.startswith("#"):
+            heading = stripped.lstrip("#").strip()
+            story.append(Paragraph(heading, styles["Heading2"]))
+        elif stripped.startswith("- "):
+            story.append(Paragraph(f"• {stripped[2:].strip()}", styles["BodyText"]))
+        else:
+            story.append(Paragraph(stripped, styles["BodyText"]))
+    story.append(Spacer(1, 12))
+
+    if tables:
+        story.append(Paragraph("Артефакты (таблицы, конфигурации, отчёты)", styles["Heading2"]))
+        story.append(Spacer(1, 6))
+        for table in tables:
+            story.append(Paragraph(str(table), styles["BodyText"]))
+        story.append(Spacer(1, 12))
+
+    if figures:
+        story.append(PageBreak())
+        story.append(Paragraph("Графики и визуализации", styles["Heading2"]))
+        story.append(Spacer(1, 12))
+        max_width = width - 80
+        max_height = height - 160
+        for fig in figures:
+            try:
+                image = RLImage(str(fig))
+                image._restrictSize(max_width, max_height)
+                story.append(image)
+                story.append(Spacer(1, 6))
+                story.append(Paragraph(str(fig), styles["BodyText"]))
+                story.append(Spacer(1, 18))
+            except Exception:
+                story.append(Paragraph(f"[Не удалось встроить изображение] {fig}", styles["BodyText"]))
+                story.append(Spacer(1, 12))
+
+    doc.build(story)
+    return pdf_path
 
 
 def _load_inventory(config: dict) -> pd.DataFrame:
@@ -1010,37 +1073,41 @@ def stage_asr(config: dict, force: bool = False, **_) -> StageResult:
 
 
 def stage_report(config: dict, force: bool = False, **_) -> StageResult:
-    summary_path = Path(config["report"]["summary_path"])
-    if summary_path.exists() and not force:
-        return StageResult(
-            name="report",
-            outputs={"summary": str(summary_path)},
-            message="Отчёт уже существует.",
-        )
+    summary_path = Path(config["report"].get("summary_path"))
+    pdf_path = Path(config["report"].get("summary_pdf_path", summary_path.with_suffix('.pdf')))
 
-    sections = [
-        (
-            "Статус",
-            "Пайплайн EDA выполнен. Обновите раздел после реального запуска.",
-        ),
-        (
-            "Артефакты",
-            "\n".join(
-                [
-                    f"- raw_inventory: {config['paths']['tables']}/raw_inventory.parquet",
-                    f"- labels_validity: {config['paths']['tables']}/labels_validity.parquet",
-                    f"- vad_stats: {config['paths']['tables']}/vad_stats.parquet",
-                    f"- hard_negatives: {config['paths']['tables']}/hard_negatives.parquet",
-                    f"- cv_splits_v1.json: {config['paths']['tables']}/cv_splits_v1.json",
-                ]
+    if not summary_path.exists() or force:
+        sections = [
+            ("Статус", "Пайплайн EDA выполнен. Обновите раздел после реального запуска."),
+            (
+                "Артефакты",
+                "\n".join(
+                    [
+                        f"- raw_inventory: {config['paths']['tables']}/raw_inventory.parquet",
+                        f"- labels_validity: {config['paths']['tables']}/labels_validity.parquet",
+                        f"- vad_stats: {config['paths']['tables']}/vad_stats.parquet",
+                        f"- hard_negatives: {config['paths']['tables']}/hard_negatives.parquet",
+                        f"- cv_splits_v1.json: {config['paths']['tables']}/cv_splits_v1.json",
+                    ]
+                ),
             ),
-        ),
-    ]
-    report.write_markdown_report(summary_path, sections)
+        ]
+        report.write_markdown_report(summary_path, sections)
+
+    summary_text = summary_path.read_text(encoding="utf-8") if summary_path.exists() else ""
+
+    tables_dir = Path(config["paths"]["tables"])
+    table_files = sorted(p for p in tables_dir.glob('**/*') if p.is_file())
+
+    figs_dir = Path(config["paths"]["figs"])
+    figure_files = sorted(p for p in figs_dir.glob('**/*') if p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.pdf'})
+
+    _build_pdf_report(pdf_path, summary_text, table_files, figure_files)
+
     return StageResult(
         name="report",
-        outputs={"summary": str(summary_path)},
-        message="Черновой отчёт EDA сформирован.",
+        outputs={"summary": str(summary_path), "summary_pdf": str(pdf_path)},
+        message="Сформированы отчёты EDA в Markdown и PDF.",
     )
 
 

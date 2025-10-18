@@ -51,3 +51,4 @@ windowing:
 
 report:
   summary_path: ./eda_workspace/reports/EDA_Summary.md
+  summary_pdf_path: ./eda_workspace/reports/EDA_Summary.pdf

@@ -43,3 +43,4 @@ windowing:
 
 report:
   summary_path: ./eda_workspace_mock/reports/EDA_Summary.md
+  summary_pdf_path: ./eda_workspace_mock/reports/EDA_Summary.pdf
