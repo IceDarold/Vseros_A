@@ -1,0 +1,5 @@
+Заполнить при запуске в Colab:
+!ffmpeg -version
+!python --version
+import torchaudio, librosa
+print(torchaudio.__version__, librosa.__version__)

@@ -1,0 +1,53 @@
+paths:
+  project_root: /content
+  data_root: /content/data
+  raw_train: /content/data/raw/train_opus
+  raw_test: /content/data/raw/test_opus
+  meta: /content/data/meta
+  interim_wav: /content/data/interim/wav16k_mono
+  tables: /content/data/tables
+  samples: /content/data/samples
+  reports: /content/reports
+  figs: /content/reports/figs
+  env_log: /content/data/meta/env_versions.txt
+  readme_short: /content/data/meta/README_EDA.md
+
+downloads:
+  train:
+    url: https://cloud.mail.ru/public/Gsyr/8VxmbhAaZ/train_data.tar
+    output: /content/data/raw/train_data.tar
+    extract_to: /content/data/raw
+  test:
+    url: https://cloud.mail.ru/public/Gsyr/8VxmbhAaZ/test_data.tar
+    output: /content/data/raw/test_data.tar
+    extract_to: /content/data/raw
+
+dataset:
+  word_bounds_path: /content/data/meta/word_bounds.json
+  train_manifest: null
+  test_manifest: null
+
+audio:
+  target_sample_rate: 16000
+  target_channels: 1
+  vad_frame_ms: 30
+  vad_threshold: 0.1
+
+analysis:
+  preview_count: 12
+  vad_probe_limit: 1000
+  neg_samples: 50
+  pos_samples: 50
+  duplicate_hash_seconds: 10
+  mel_preview_cols: 3
+  cv_folds: 5
+  vad_top_db: 40
+
+windowing:
+  seg_size_default: 1.5
+  stride_default: 0.25
+  margin_before: 0.25
+  margin_after: 0.25
+
+report:
+  summary_path: /content/reports/EDA_Summary.md

@@ -1,0 +1,53 @@
+paths:
+  project_root: .
+  data_root: ./eda_workspace/data
+  raw_train: ./eda_workspace/data/raw/train_opus
+  raw_test: ./eda_workspace/data/raw/test_opus
+  meta: ./eda_workspace/data/meta
+  interim_wav: ./eda_workspace/data/interim/wav16k_mono
+  tables: ./eda_workspace/data/tables
+  samples: ./eda_workspace/data/samples
+  reports: ./eda_workspace/reports
+  figs: ./eda_workspace/reports/figs
+  env_log: ./eda_workspace/data/meta/env_versions.txt
+  readme_short: ./eda_workspace/data/meta/README_EDA.md
+
+downloads:
+  train:
+    url: https://cloud.mail.ru/public/Gsyr/8VxmbhAaZ/train_data.tar
+    output: ./eda_workspace/data/raw/train_data.tar
+    extract_to: ./eda_workspace/data/raw
+  test:
+    url: https://cloud.mail.ru/public/Gsyr/8VxmbhAaZ/test_data.tar
+    output: ./eda_workspace/data/raw/test_data.tar
+    extract_to: ./eda_workspace/data/raw
+
+dataset:
+  word_bounds_path: ./eda_workspace/data/meta/word_bounds.json
+  train_manifest: null
+  test_manifest: null
+
+audio:
+  target_sample_rate: 16000
+  target_channels: 1
+  vad_frame_ms: 30
+  vad_threshold: 0.1
+
+analysis:
+  preview_count: 12
+  vad_probe_limit: 100
+  neg_samples: 20
+  pos_samples: 20
+  duplicate_hash_seconds: 10
+  mel_preview_cols: 3
+  cv_folds: 3
+  vad_top_db: 40
+
+windowing:
+  seg_size_default: 1.5
+  stride_default: 0.25
+  margin_before: 0.25
+  margin_after: 0.25
+
+report:
+  summary_path: ./eda_workspace/reports/EDA_Summary.md

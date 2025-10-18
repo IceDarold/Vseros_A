@@ -1,0 +1,45 @@
+paths:
+  project_root: .
+  data_root: ./eda_workspace_mock/data
+  raw_train: ./eda_workspace_mock/data/raw/train_opus
+  raw_test: ./eda_workspace_mock/data/raw/test_opus
+  meta: ./eda_workspace_mock/data/meta
+  interim_wav: ./eda_workspace_mock/data/interim/wav16k_mono
+  tables: ./eda_workspace_mock/data/tables
+  samples: ./eda_workspace_mock/data/samples
+  reports: ./eda_workspace_mock/reports
+  figs: ./eda_workspace_mock/reports/figs
+  env_log: ./eda_workspace_mock/data/meta/env_versions.txt
+  readme_short: ./eda_workspace_mock/data/meta/README_EDA.md
+
+downloads: {}
+
+dataset:
+  word_bounds_path: ./eda_workspace_mock/data/meta/word_bounds.json
+  train_manifest: null
+  test_manifest: null
+
+audio:
+  target_sample_rate: 16000
+  target_channels: 1
+  vad_frame_ms: 30
+  vad_threshold: 0.1
+
+analysis:
+  preview_count: 6
+  vad_probe_limit: 50
+  neg_samples: 5
+  pos_samples: 5
+  duplicate_hash_seconds: 10
+  mel_preview_cols: 3
+  cv_folds: 3
+  vad_top_db: 40
+
+windowing:
+  seg_size_default: 1.5
+  stride_default: 0.25
+  margin_before: 0.25
+  margin_after: 0.25
+
+report:
+  summary_path: ./eda_workspace_mock/reports/EDA_Summary.md
